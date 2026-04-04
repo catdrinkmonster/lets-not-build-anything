@@ -6,8 +6,14 @@ import { useEffect, useMemo, useState } from "react";
 import {
   DEFAULT_IDEA,
   createBuildSession,
+  getVariantCount,
+  getVariantPreview,
+  type BuildCard,
   type BuildSession,
+  type CardStage,
 } from "@/lib/build-nothing";
+
+const DEV_STAGES: CardStage[] = ["initial", "middle", "final"];
 
 export function ShipNothing() {
   const [draft, setDraft] = useState("");
@@ -15,11 +21,20 @@ export function ShipNothing() {
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [historyCount, setHistoryCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [previewStage, setPreviewStage] = useState<CardStage>("initial");
+  const [previewIndex, setPreviewIndex] = useState(0);
 
+  const devMode = process.env.NODE_ENV === "development";
   const activePrompt = useMemo(() => draft.trim() || DEFAULT_IDEA, [draft]);
   const canSubmit = draft.trim().length > 0;
-  const completedSteps = session?.steps.slice(0, historyCount) ?? [];
-  const activeStep = session?.steps[activeStepIndex] ?? null;
+  const sequence = useMemo<BuildCard[]>(
+    () => (session ? [session.initialCard, ...session.middleCards] : []),
+    [session],
+  );
+  const completedSteps = sequence.slice(0, historyCount);
+  const activeStep = sequence[activeStepIndex] ?? null;
+  const previewCount = getVariantCount(previewStage);
+  const previewCard = devMode ? getVariantPreview(previewStage, previewIndex) : null;
 
   useEffect(() => {
     if (!session) {
@@ -27,33 +42,25 @@ export function ShipNothing() {
     }
 
     const timers: number[] = [];
-    let elapsed = session.steps[0]?.durationMs ?? 0;
+    let elapsed = sequence[0]?.durationMs ?? 0;
 
-    session.steps.forEach((step, index) => {
+    sequence.forEach((card, index) => {
       if (index === 0) {
         return;
       }
 
-      timers.push(
-        window.setTimeout(() => setActiveStepIndex(index), elapsed),
-      );
-      timers.push(
-        window.setTimeout(() => setHistoryCount(index), elapsed + 90),
-      );
-      elapsed += step.durationMs;
+      timers.push(window.setTimeout(() => setActiveStepIndex(index), elapsed));
+      timers.push(window.setTimeout(() => setHistoryCount(index), elapsed + 90));
+      elapsed += card.durationMs;
     });
 
-    timers.push(
-      window.setTimeout(() => setIsComplete(true), elapsed),
-    );
-    timers.push(
-      window.setTimeout(() => setHistoryCount(session.steps.length), elapsed + 90),
-    );
+    timers.push(window.setTimeout(() => setIsComplete(true), elapsed));
+    timers.push(window.setTimeout(() => setHistoryCount(sequence.length), elapsed + 90));
 
     return () => {
       timers.forEach((timer) => window.clearTimeout(timer));
     };
-  }, [session]);
+  }, [sequence, session]);
 
   function handleSubmit() {
     if (!canSubmit) {
@@ -84,6 +91,16 @@ export function ShipNothing() {
     event.preventDefault();
     handleSubmit();
   }
+
+  function changePreviewIndex(direction: number) {
+    setPreviewIndex((current) => (current + direction + previewCount) % previewCount);
+  }
+
+  function handlePreviewStageChange(stage: CardStage) {
+    setPreviewStage(stage);
+    setPreviewIndex(0);
+  }
+
   return (
     <main className="relative flex min-h-screen flex-1 items-center justify-center overflow-hidden px-4 py-10 sm:px-6">
       <motion.section
@@ -108,14 +125,7 @@ export function ShipNothing() {
                 </h1>
               </div>
 
-              <motion.div
-                key="composer"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.1, ease: "linear" }}
-                className="panel-strong terminal-accent-left relative overflow-hidden p-4"
-              >
+              <div className="panel-strong terminal-accent-left relative overflow-hidden p-4">
                 <div className="relative bg-[var(--field)]">
                   <textarea
                     value={draft}
@@ -151,7 +161,56 @@ export function ShipNothing() {
                     </svg>
                   </button>
                 </div>
-              </motion.div>
+              </div>
+
+              {devMode && previewCard ? (
+                <div className="mt-5 space-y-3">
+                  <div className="flex flex-wrap items-center gap-2 px-1">
+                    <span className="terminal-text text-[11px] uppercase tracking-[0.18em] text-white/34">
+                      dev mode
+                    </span>
+                    {DEV_STAGES.map((stage) => (
+                      <button
+                        key={stage}
+                        type="button"
+                        onClick={() => handlePreviewStageChange(stage)}
+                        className="terminal-text bg-[var(--panel-soft)] px-2 py-1 text-[11px] uppercase tracking-[0.16em] text-white/66"
+                      >
+                        {stage}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => changePreviewIndex(-1)}
+                      className="terminal-text bg-[var(--panel-soft)] px-2 py-1 text-[11px] text-white/66"
+                    >
+                      prev
+                    </button>
+                    <span className="terminal-text text-[11px] text-white/38">
+                      {previewIndex + 1}/{previewCount}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => changePreviewIndex(1)}
+                      className="terminal-text bg-[var(--panel-soft)] px-2 py-1 text-[11px] text-white/66"
+                    >
+                      next
+                    </button>
+                  </div>
+
+                  <div className="panel-strong terminal-accent-left px-5 py-5">
+                    <p className="terminal-text text-[11px] uppercase tracking-[0.18em] text-white/34">
+                      {previewCard.eyebrow}
+                    </p>
+                    <p className="mt-6 text-2xl font-medium tracking-[-0.04em] text-white sm:text-[2rem]">
+                      {previewCard.title}
+                    </p>
+                    <p className="terminal-text mt-3 max-w-lg text-sm leading-7 text-white/46 sm:text-[15px]">
+                      {previewCard.body}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
             </motion.div>
           ) : (
             <motion.div
@@ -162,14 +221,7 @@ export function ShipNothing() {
               transition={{ duration: 0.12, ease: "linear" }}
               className="mx-auto w-full max-w-3xl"
             >
-              <motion.div
-                key={`stack-${session.id}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.12, ease: "linear" }}
-                className="space-y-3"
-              >
+              <div className="space-y-3">
                 <div className="flex items-center justify-between px-1">
                   <p className="terminal-text text-[11px] uppercase tracking-[0.18em] text-white/34">
                     Deliberate avoidance
@@ -184,14 +236,14 @@ export function ShipNothing() {
                 </div>
 
                 <div className="space-y-2">
-                  {completedSteps.map((step) => (
+                  {completedSteps.map((card) => (
                     <div
-                      key={step.id}
+                      key={card.id}
                       className="terminal-accent-left relative bg-[var(--panel-soft)] px-4 py-3"
                     >
                       <div className="flex items-center justify-between gap-4">
                         <p className="terminal-text truncate text-sm text-white/74">
-                          {step.label}
+                          {card.title}
                         </p>
                         <div className="h-2 w-2 bg-white/32" />
                       </div>
@@ -211,16 +263,16 @@ export function ShipNothing() {
                           >
                             <div className="flex items-center justify-between gap-4">
                               <p className="terminal-text text-[11px] uppercase tracking-[0.18em] text-white/34">
-                                final result
+                                {session.finalCard.eyebrow}
                               </p>
                               <div className="h-2 w-2 bg-[var(--accent)]" />
                             </div>
 
                             <p className="mt-6 max-w-xl text-2xl font-medium tracking-[-0.04em] text-white sm:text-[2rem]">
-                              {session.verdict}
+                              {session.finalCard.title}
                             </p>
                             <p className="terminal-text mt-3 max-w-lg text-sm leading-7 text-white/46 sm:text-[15px]">
-                              {session.summary}
+                              {session.finalCard.body}
                             </p>
                           </motion.div>
                         ) : activeStep ? (
@@ -233,16 +285,16 @@ export function ShipNothing() {
                           >
                             <div className="flex items-center justify-between gap-4">
                               <p className="terminal-text text-[11px] uppercase tracking-[0.18em] text-white/34">
-                                step {activeStepIndex + 1} of {session.steps.length}
+                                {activeStep.eyebrow}
                               </p>
                               <LoadingDots />
                             </div>
 
                             <p className="mt-6 text-2xl font-medium tracking-[-0.04em] text-white sm:text-[2rem]">
-                              {activeStep.label}
+                              {activeStep.title}
                             </p>
                             <p className="terminal-text mt-3 max-w-lg text-sm leading-7 text-white/46 sm:text-[15px]">
-                              {activeStep.detail}
+                              {activeStep.body}
                             </p>
 
                             <div className="mt-7 h-1 overflow-hidden bg-white/8">
@@ -263,7 +315,7 @@ export function ShipNothing() {
                     </div>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

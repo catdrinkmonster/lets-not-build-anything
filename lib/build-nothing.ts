@@ -1,104 +1,191 @@
-export type BuildStep = {
+export type CardStage = "initial" | "middle" | "final";
+
+export type BuildCard = {
   id: string;
-  label: string;
-  detail: string;
+  eyebrow: string;
+  title: string;
+  body: string;
   durationMs: number;
+};
+
+export type FinalCard = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  body: string;
 };
 
 export type BuildSession = {
   id: string;
-  opener: string;
-  steps: BuildStep[];
-  verdict: string;
-  summary: string;
+  initialCard: BuildCard;
+  middleCards: BuildCard[];
+  finalCard: FinalCard;
 };
 
-type SummaryFactory = () => string;
-
-type StepTemplate = {
-  label: string;
-  detail: string;
+type CardTemplate = {
+  eyebrow: string;
+  title: string;
+  body: string;
 };
+
+const MIDDLE_CARD_COUNT = 3;
 
 export const DEFAULT_IDEA =
   "an ai startup for people too busy to have a personality";
 
-const OPENERS = [
-  "Reviewing the idea with a serious face and unserious intent.",
-  "Giving this the exact amount of thought it can survive.",
-  "Applying a rigorous process of hesitation and selective effort.",
-  "Opening an imaginary roadmap and immediately distrusting it.",
-];
-
-const STEP_TEMPLATES: StepTemplate[] = [
+export const INITIAL_CARD_VARIANTS: CardTemplate[] = [
   {
-    label: "Reading the brief",
-    detail:
-      "Scanning the concept for signs of urgency and finding mostly vibes.",
+    eyebrow: "initial review",
+    title: "Reading the room",
+    body: "Starting with a measured pause and a professional amount of doubt.",
   },
   {
-    label: "Competitive analysis",
-    detail:
-      "Watching unrelated product demos and pretending this counts as research.",
+    eyebrow: "initial review",
+    title: "Opening the brief",
+    body: "Looking over the idea like this will require emotional labor.",
   },
   {
-    label: "Technical planning",
-    detail:
-      "Opening a blank editor, typing nothing, and calling it architecture.",
+    eyebrow: "initial review",
+    title: "First pass",
+    body: "Applying immediate skepticism before any fake momentum begins.",
   },
   {
-    label: "Energy management",
-    detail:
-      "Stood up, stretched once, and decided that counted as forward progress.",
-  },
-  {
-    label: "Design review",
-    detail: "Adjusted spacing mentally and never committed the changes.",
-  },
-  {
-    label: "Risk assessment",
-    detail:
-      "Concluding the main deliverable would mostly be future maintenance.",
-  },
-  {
-    label: "Stakeholder sync",
-    detail:
-      "Held a private meeting with my better judgment and it was not supportive.",
-  },
-  {
-    label: "Implementation window",
-    detail: "Hovered over the keyboard, then preserved my peace instead.",
-  },
-  {
-    label: "Shipping review",
-    detail: "Asked whether this needed to exist. The silence was useful.",
-  },
-  {
-    label: "Momentum check",
-    detail:
-      "Mistook a nice animation for meaningful progress and kept it moving.",
+    eyebrow: "initial review",
+    title: "Sizing it up",
+    body: "Giving the concept one respectful glance before the avoidance cycle starts.",
   },
 ];
 
-const VERDICTS = [
-  "Decided this should remain a concept.",
-  "This is not surviving triage today.",
-  "Could have built it. Chose dignity instead.",
-  "Reviewed, judged, and respectfully left untouched.",
+export const MIDDLE_CARD_VARIANTS: CardTemplate[] = [
+  {
+    eyebrow: "workstream",
+    title: "Competitive analysis",
+    body: "Watching unrelated product demos and pretending this counts as research.",
+  },
+  {
+    eyebrow: "workstream",
+    title: "Technical planning",
+    body: "Opening a blank editor, typing nothing, and calling it architecture.",
+  },
+  {
+    eyebrow: "workstream",
+    title: "Risk assessment",
+    body: "Concluding the main deliverable would mostly be future maintenance.",
+  },
+  {
+    eyebrow: "workstream",
+    title: "Momentum check",
+    body: "Mistaking a convincing interface for meaningful progress.",
+  },
+  {
+    eyebrow: "workstream",
+    title: "Design review",
+    body: "Adjusting spacing mentally and never committing the changes.",
+  },
+  {
+    eyebrow: "workstream",
+    title: "Energy management",
+    body: "Standing up once and counting that as a productivity system.",
+  },
+  {
+    eyebrow: "workstream",
+    title: "Scope control",
+    body: "Reducing ambition until the concept becomes spiritually optional.",
+  },
+  {
+    eyebrow: "workstream",
+    title: "Stakeholder sync",
+    body: "Holding a private meeting with better judgment and hearing strong objections.",
+  },
 ];
 
-const SUMMARIES: SummaryFactory[] = [
-  () => "No product was harmed. No roadmap was expanded. Morale is stable.",
-  () =>
-    "The interface looked busy enough to feel productive, which is what really matters.",
-  () =>
-    "This outcome was reached through a disciplined process of delay, deflection, and taste.",
-  () => "After deep consideration, the best implementation was no implementation.",
+export const FINAL_CARD_VARIANTS: CardTemplate[] = [
+  {
+    eyebrow: "final result",
+    title: "Decided this should remain a concept.",
+    body: "No product was harmed. No roadmap was expanded. Morale is stable.",
+  },
+  {
+    eyebrow: "final result",
+    title: "This is not surviving triage today.",
+    body: "The process was thorough, the outcome was negative, and the restraint was tasteful.",
+  },
+  {
+    eyebrow: "final result",
+    title: "Could have built it. Chose dignity instead.",
+    body: "After serious review, the cleanest implementation was not implementing anything.",
+  },
+  {
+    eyebrow: "final result",
+    title: "Reviewed, judged, and respectfully left untouched.",
+    body: "The interface implied progress long enough for everyone to move on peacefully.",
+  },
 ];
 
 export function normalizePrompt(input: string): string {
   const normalized = input.trim().replace(/\s+/g, " ");
   return normalized || DEFAULT_IDEA;
+}
+
+export function getVariantCount(stage: CardStage): number {
+  return getPool(stage).length;
+}
+
+export function getVariantPreview(stage: CardStage, index: number) {
+  const template = getTemplate(stage, index);
+
+  if (stage === "final") {
+    return {
+      id: `${stage}-${normalizeIndex(index, getPool(stage).length)}`,
+      eyebrow: template.eyebrow,
+      title: template.title,
+      body: template.body,
+    } satisfies FinalCard;
+  }
+
+  return {
+    id: `${stage}-${normalizeIndex(index, getPool(stage).length)}`,
+    eyebrow: template.eyebrow,
+    title: template.title,
+    body: template.body,
+    durationMs: 920,
+  } satisfies BuildCard;
+}
+
+export function createBuildSession(input: string): BuildSession {
+  const prompt = normalizePrompt(input);
+  const seed = hashString(prompt.toLowerCase());
+
+  return {
+    id: seed.toString(36),
+    initialCard: createTimedCard(
+      "initial",
+      selectInitialIndex(seed),
+      durationFor(seed, 0),
+    ),
+    middleCards: selectMiddleCards(seed),
+    finalCard: createFinalCard(selectFinalIndex(seed)),
+  };
+}
+
+function getPool(stage: CardStage) {
+  switch (stage) {
+    case "initial":
+      return INITIAL_CARD_VARIANTS;
+    case "middle":
+      return MIDDLE_CARD_VARIANTS;
+    case "final":
+      return FINAL_CARD_VARIANTS;
+  }
+}
+
+function normalizeIndex(index: number, length: number) {
+  return ((index % length) + length) % length;
+}
+
+function getTemplate(stage: CardStage, index: number) {
+  const pool = getPool(stage);
+  return pool[normalizeIndex(index, pool.length)];
 }
 
 function hashString(input: string): number {
@@ -112,47 +199,60 @@ function hashString(input: string): number {
   return hash >>> 0;
 }
 
-function selectLine(pool: string[], seed: number, offset: number) {
-  return pool[(seed + offset) % pool.length];
+function durationFor(seed: number, index: number) {
+  return 620 + (((seed >> (index * 4)) & 7) + 1) * 90;
 }
 
-function selectSummary(pool: SummaryFactory[], seed: number, offset: number) {
-  return pool[(seed + offset) % pool.length]();
+function selectInitialIndex(seed: number) {
+  return seed % INITIAL_CARD_VARIANTS.length;
 }
 
-function selectSteps(seed: number): BuildStep[] {
-  const steps: BuildStep[] = [];
+function selectFinalIndex(seed: number) {
+  return (seed >> 3) % FINAL_CARD_VARIANTS.length;
+}
+
+function createTimedCard(
+  stage: "initial" | "middle",
+  index: number,
+  durationMs: number,
+): BuildCard {
+  const template = getTemplate(stage, index);
+  const normalizedIndex = normalizeIndex(index, getPool(stage).length);
+
+  return {
+    id: `${stage}-${normalizedIndex}-${durationMs}`,
+    eyebrow: template.eyebrow,
+    title: template.title,
+    body: template.body,
+    durationMs,
+  };
+}
+
+function createFinalCard(index: number): FinalCard {
+  const template = getTemplate("final", index);
+  const normalizedIndex = normalizeIndex(index, FINAL_CARD_VARIANTS.length);
+
+  return {
+    id: `final-${normalizedIndex}`,
+    eyebrow: template.eyebrow,
+    title: template.title,
+    body: template.body,
+  };
+}
+
+function selectMiddleCards(seed: number): BuildCard[] {
+  const cards: BuildCard[] = [];
   const used = new Set<number>();
-  let cursor = seed % STEP_TEMPLATES.length;
+  let cursor = (seed >> 1) % MIDDLE_CARD_VARIANTS.length;
 
-  while (steps.length < 4) {
+  while (cards.length < MIDDLE_CARD_COUNT) {
     if (!used.has(cursor)) {
-      const template = STEP_TEMPLATES[cursor];
-
-      steps.push({
-        id: `${steps.length}-${cursor}`,
-        label: template.label,
-        detail: template.detail,
-        durationMs: 620 + (((seed >> (steps.length * 4)) & 7) + 1) * 90,
-      });
+      cards.push(createTimedCard("middle", cursor, durationFor(seed, cards.length + 1)));
       used.add(cursor);
     }
 
-    cursor = (cursor + 3) % STEP_TEMPLATES.length;
+    cursor = (cursor + 3) % MIDDLE_CARD_VARIANTS.length;
   }
 
-  return steps;
-}
-
-export function createBuildSession(input: string): BuildSession {
-  const prompt = normalizePrompt(input);
-  const seed = hashString(prompt.toLowerCase());
-
-  return {
-    id: seed.toString(36),
-    opener: selectLine(OPENERS, seed, 1),
-    steps: selectSteps(seed),
-    verdict: selectLine(VERDICTS, seed, 3),
-    summary: selectSummary(SUMMARIES, seed, 5),
-  };
+  return cards;
 }
