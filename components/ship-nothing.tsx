@@ -159,6 +159,14 @@ export function ShipNothing() {
 
   return (
     <main className="relative flex min-h-screen flex-1 items-center justify-center overflow-hidden px-4 py-10 sm:px-6">
+      <a
+        href="https://github.com/catdrinkmonster/lets-not-build-anything"
+        target="_blank"
+        rel="noreferrer"
+        className="terminal-text absolute right-4 top-4 z-20 text-[11px] uppercase tracking-[0.16em] text-white/34 transition hover:text-white/72 sm:right-6 sm:top-6"
+      >
+        GitHub
+      </a>
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

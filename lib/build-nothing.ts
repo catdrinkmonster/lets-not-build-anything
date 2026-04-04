@@ -235,8 +235,8 @@ export const FINAL_CARD_VARIANTS: FinalCardTemplate[] = [
   {
     key: "dog-accident",
     eyebrow: "final result",
-    title: "Oh man, you looked away.",
-    body: "He totally pissed on my 5 MacBook minis. I'm going to have to cancel this.",
+    title: "Aww man, you totally looked away.",
+    body: "He pissed on my 5 MacBook minis. I'm going to have to cancel this. :(",
     specialOnly: true,
   },
 ];
