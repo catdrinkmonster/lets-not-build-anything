@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { moveBouncingRect, type MovingRectState } from "@/lib/dvd-motion";
 
 const COPY =
-  "This card exists purely to prove that the layout can survive a deeply unnecessary moving obstacle. The DVD logo keeps bouncing around the paragraph while the text recomputes itself in real time, which is absolutely not helping your product, but it does look committed. If this thing ever lands perfectly in the corner, we will immediately treat that as a technical green light and pretend it was all part of the roadmap.";
+  "Oh my god, the text moved. Wow. The text actually moved around the logo. I cannot believe it. This changes everything. This is the future of software. Nobody has ever seen the paragraph do this before. Look at it go. Look at the little words making room for the logo like this is some kind of moon landing for frontend development. Wow, wow, wow, wow, wow. We are so back.";
 const FONT = '15px "IBM Plex Mono"';
 const LINE_HEIGHT = 26;
 const LOGO_WIDTH = 88;

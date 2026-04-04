@@ -213,8 +213,8 @@ export const MIDDLE_CARD_VARIANTS: CardTemplate[] = [
   {
     key: "dvd-layout",
     eyebrow: "workstream",
-    title: "Stress-testing the layout with a bouncing DVD logo",
-    body: "If it hits the corner, we ship.",
+    title: "Making the text move around a DVD logo",
+    body: "Frontend history is being made as we speak.",
     interaction: {
       type: "dvd-layout",
     },

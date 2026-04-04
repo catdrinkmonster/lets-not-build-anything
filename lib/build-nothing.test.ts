@@ -93,7 +93,7 @@ describe("variant pools", () => {
       (card) => card.interaction?.type === "dvd-layout",
     );
 
-    expect(variant?.title).toBe("Stress-testing the layout with a bouncing DVD logo");
+    expect(variant?.title).toBe("Making the text move around a DVD logo");
   });
 
   it("exposes the fake-diff interaction on the dedicated middle variant", () => {
