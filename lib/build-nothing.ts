@@ -25,6 +25,8 @@ export type BuildCardInteraction = {
   type: "fake-diff";
 } | {
   type: "tenor-embed";
+} | {
+  type: "fake-captcha";
 };
 
 export type FinalCardInteraction = {
@@ -76,6 +78,14 @@ export const INITIAL_CARD_VARIANTS: CardTemplate[] = [
     body: "This might take 6 or 7 minutes.",
     interaction: {
       type: "tenor-embed",
+    },
+  },
+  {
+    eyebrow: "initial review",
+    title: "Could you click this button for me?",
+    body: "Otherwise I can't access T3 Code.",
+    interaction: {
+      type: "fake-captcha",
     },
   },
 ];

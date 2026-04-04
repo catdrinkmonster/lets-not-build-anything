@@ -28,6 +28,7 @@ export function ShipNothing() {
   const [historyCount, setHistoryCount] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [previewStage, setPreviewStage] = useState<CardStage>("initial");
+  const [resolvedActionStepIds, setResolvedActionStepIds] = useState<string[]>([]);
 
   const devMode = process.env.NODE_ENV === "development";
   const activePrompt = useMemo(() => draft.trim() || DEFAULT_IDEA, [draft]);
@@ -38,6 +39,7 @@ export function ShipNothing() {
   );
   const completedSteps = sequence.slice(0, historyCount);
   const activeStep = sequence[activeStepIndex] ?? null;
+  const activeStepRequiresAction = activeStep?.interaction?.type === "fake-captcha";
   const previewCount = getVariantCount(previewStage);
   const previewCards = useMemo(
     () =>
@@ -52,30 +54,49 @@ export function ShipNothing() {
   const finalInteraction = isComplete ? session?.finalCard.interaction : undefined;
 
   useEffect(() => {
-    if (!session) {
+    if (!session || !activeStep || isComplete) {
       return;
     }
 
-    const timers: number[] = [];
-    let elapsed = sequence[0]?.durationMs ?? 0;
+    if (
+      activeStepRequiresAction &&
+      !resolvedActionStepIds.includes(activeStep.id)
+    ) {
+      return;
+    }
 
-    sequence.forEach((card, index) => {
-      if (index === 0) {
+    let historyTimer = 0;
+    const advanceDelay = activeStepRequiresAction ? 180 : activeStep.durationMs;
+    const advanceTimer = window.setTimeout(() => {
+      if (activeStepIndex === sequence.length - 1) {
+        setIsComplete(true);
+        historyTimer = window.setTimeout(
+          () => setHistoryCount(sequence.length),
+          90,
+        );
         return;
       }
 
-      timers.push(window.setTimeout(() => setActiveStepIndex(index), elapsed));
-      timers.push(window.setTimeout(() => setHistoryCount(index), elapsed + 90));
-      elapsed += card.durationMs;
-    });
-
-    timers.push(window.setTimeout(() => setIsComplete(true), elapsed));
-    timers.push(window.setTimeout(() => setHistoryCount(sequence.length), elapsed + 90));
+      setActiveStepIndex(activeStepIndex + 1);
+      historyTimer = window.setTimeout(
+        () => setHistoryCount(activeStepIndex + 1),
+        90,
+      );
+    }, advanceDelay);
 
     return () => {
-      timers.forEach((timer) => window.clearTimeout(timer));
+      window.clearTimeout(advanceTimer);
+      window.clearTimeout(historyTimer);
     };
-  }, [sequence, session]);
+  }, [
+    activeStep,
+    activeStepIndex,
+    activeStepRequiresAction,
+    isComplete,
+    resolvedActionStepIds,
+    sequence.length,
+    session,
+  ]);
 
   function handleSubmit() {
     if (!canSubmit) {
@@ -85,6 +106,7 @@ export function ShipNothing() {
     setActiveStepIndex(0);
     setHistoryCount(0);
     setIsComplete(false);
+    setResolvedActionStepIds([]);
     setSession(createBuildSession(activePrompt));
   }
 
@@ -94,6 +116,7 @@ export function ShipNothing() {
     setActiveStepIndex(0);
     setHistoryCount(0);
     setIsComplete(false);
+    setResolvedActionStepIds([]);
   }
 
   function handleComposerKeyDown(
@@ -109,6 +132,12 @@ export function ShipNothing() {
 
   function handlePreviewStageChange(stage: CardStage) {
     setPreviewStage(stage);
+  }
+
+  function handleActionStepResolved(stepId: string) {
+    setResolvedActionStepIds((current) =>
+      current.includes(stepId) ? current : [...current, stepId],
+    );
   }
 
   return (
@@ -207,7 +236,7 @@ export function ShipNothing() {
                           </p>
                           {previewStage === "final" ? (
                             <div className="h-2 w-2 bg-[var(--accent)]" />
-                          ) : (
+                          ) : previewCard.interaction?.type === "fake-captcha" ? null : (
                             <LoadingDots />
                           )}
                         </div>
@@ -240,6 +269,9 @@ export function ShipNothing() {
                         {previewCard.interaction?.type === "tenor-embed" ? (
                           <TenorEmbed />
                         ) : null}
+                        {previewCard.interaction?.type === "fake-captcha" ? (
+                          <FakeCaptcha key={`preview-captcha-${previewCard.id}`} />
+                        ) : null}
 
                         {previewStage === "final" &&
                         previewCard.interaction?.type === "anthropic-key" ? (
@@ -251,7 +283,8 @@ export function ShipNothing() {
                           />
                         ) : null}
 
-                        {previewStage === "final" ? null : (
+                        {previewStage === "final" ||
+                        previewCard.interaction?.type === "fake-captcha" ? null : (
                           <LoadingBar
                             loadingKey={`preview-${previewStage}-${previewCard.id}`}
                             duration={1.8}
@@ -352,7 +385,9 @@ export function ShipNothing() {
                               <p className="terminal-text text-[11px] uppercase tracking-[0.18em] text-white/34">
                                 {activeHeader}
                               </p>
-                              <LoadingDots />
+                              {activeStep.interaction?.type === "fake-captcha" ? null : (
+                                <LoadingDots />
+                              )}
                             </div>
 
                             {activeStep.interaction?.type === "ugly-gradients" ? (
@@ -381,11 +416,19 @@ export function ShipNothing() {
                             {activeStep.interaction?.type === "tenor-embed" ? (
                               <TenorEmbed />
                             ) : null}
+                            {activeStep.interaction?.type === "fake-captcha" ? (
+                              <FakeCaptcha
+                                key={`active-captcha-${activeStep.id}`}
+                                onVerified={() => handleActionStepResolved(activeStep.id)}
+                              />
+                            ) : null}
 
-                            <LoadingBar
-                              loadingKey={activeStep.id}
-                              duration={Math.max(activeStep.durationMs / 1000, 0.75)}
-                            />
+                            {activeStep.interaction?.type === "fake-captcha" ? null : (
+                              <LoadingBar
+                                loadingKey={activeStep.id}
+                                duration={Math.max(activeStep.durationMs / 1000, 0.75)}
+                              />
+                            )}
                           </motion.div>
                         ) : null}
                       </AnimatePresence>
@@ -505,6 +548,66 @@ function FakeAgentsDiff() {
         ))}
       </div>
     </div>
+  );
+}
+
+function FakeCaptcha({ onVerified }: { onVerified?: () => void }) {
+  const [status, setStatus] = useState<"idle" | "loading" | "verified">("idle");
+
+  useEffect(() => {
+    if (status !== "loading") {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      if (onVerified) {
+        onVerified();
+        return;
+      }
+
+      setStatus("verified");
+    }, 1350);
+
+    return () => window.clearTimeout(timer);
+  }, [onVerified, status]);
+
+  function handleClick() {
+    if (status !== "idle") {
+      return;
+    }
+
+    setStatus("loading");
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={status !== "idle"}
+      className="mt-5 flex w-full max-w-[340px] items-center gap-4 bg-[var(--field)] px-4 py-4 text-left disabled:cursor-default"
+    >
+      <div className="flex h-6 w-6 items-center justify-center border border-white/28 bg-transparent">
+        {status === "loading" ? (
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 0.9, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+            className="h-3 w-3 rounded-full border border-white/70 border-t-transparent"
+          />
+        ) : status === "verified" ? (
+          <span className="terminal-text text-sm text-[var(--accent)]">✓</span>
+        ) : null}
+      </div>
+      <div className="space-y-1">
+        <p className="terminal-text text-sm text-white/86">Confirm you&apos;re human</p>
+        <p className="terminal-text text-xs text-white/34">
+          {status === "loading"
+            ? "Verifying..."
+            : status === "verified"
+              ? "Verified"
+              : "reCAPTCHA"}
+        </p>
+      </div>
+    </button>
   );
 }
 

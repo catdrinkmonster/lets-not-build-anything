@@ -26,13 +26,13 @@ describe("normalizePrompt", () => {
 
 describe("variant pools", () => {
   it("reports the configured variant counts for each stage", () => {
-    expect(getVariantCount("initial")).toBe(2);
+    expect(getVariantCount("initial")).toBe(3);
     expect(getVariantCount("middle")).toBe(10);
     expect(getVariantCount("final")).toBe(3);
   });
 
   it("returns the same preview regardless of index wrapping", () => {
-    expect(getVariantPreview("initial", 0)).toEqual(getVariantPreview("initial", 2));
+    expect(getVariantPreview("initial", 0)).toEqual(getVariantPreview("initial", 3));
     expect(getVariantPreview("middle", 0)).toEqual(getVariantPreview("middle", 10));
     expect(getVariantPreview("final", 0)).toEqual(getVariantPreview("final", 9));
   });
@@ -43,6 +43,15 @@ describe("variant pools", () => {
     );
 
     expect(variant?.title).toBe("Planning the project in unnecessary detail");
+  });
+
+  it("exposes the fake captcha interaction on the dedicated initial variant", () => {
+    const variant = INITIAL_CARD_VARIANTS.find(
+      (card) => card.interaction?.type === "fake-captcha",
+    );
+
+    expect(variant?.title).toBe("Could you click this button for me?");
+    expect(variant?.body).toBe("Otherwise I can't access T3 Code.");
   });
 
   it("exposes the dino-runner interaction on the dedicated middle variant", () => {
