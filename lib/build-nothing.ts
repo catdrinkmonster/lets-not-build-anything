@@ -78,6 +78,7 @@ type BaseCardTemplate = {
 type CardTemplate = BaseCardTemplate & {
   interaction?: BuildCardInteraction;
   mustBeLast?: boolean;
+  lastNPositions?: number;
   forcedFinalKey?: string;
 };
 
@@ -105,7 +106,7 @@ export const INITIAL_CARD_VARIANTS: CardTemplate[] = [
     key: "claude-vibecode",
     eyebrow: "initial review",
     title: "Asking Claude how to vibecode an app",
-    body: "Nevermind. I accidentally said 'hello', so I hit my limits. Asking ChatGPT instead.",
+    body: "Never mind. I accidentally said 'hello', so I hit my limits. Asking ChatGPT instead.",
   },
   {
     key: "planning-kid",
@@ -127,20 +128,26 @@ export const INITIAL_CARD_VARIANTS: CardTemplate[] = [
       type: "fake-captcha",
     },
   },
+  {
+    key: "wikipedia-banner",
+    eyebrow: "initial review",
+    title: "Checking Wikipedia how to build this thing",
+    body: "Do you have 3 dollars by chance? I can't read anything with this massive banner in my face.",
+  },
 ];
 
 export const MIDDLE_CARD_VARIANTS: CardTemplate[] = [
   {
     key: "smoke-break",
     eyebrow: "workstream",
-    title: "Taking a smoke break.",
-    body: "I'm European, so this is normal. VAT tax will be added to this action.",
+    title: "Taking a smoke break",
+    body: "I'm European, so this is normal. Naturally, VAT will be added to this action.",
   },
   {
     key: "skip-step",
     eyebrow: "workstream",
     title: "Skipping this step",
-    body: "This will likely hurt the final product, but I am willing to take that risk at your expense.",
+    body: "This action will likely hurt the final product, but I am willing to take that risk at your expense.",
     minPosition: 2,
   },
   {
@@ -154,7 +161,7 @@ export const MIDDLE_CARD_VARIANTS: CardTemplate[] = [
     key: "mrbeast",
     eyebrow: "workstream",
     title: "Watching a MrBeast video",
-    body: "Just trying to manifest some money.",
+    body: "Just trying to manifest some revenue.",
   },
   {
     key: "token-bomb",
@@ -175,6 +182,32 @@ export const MIDDLE_CARD_VARIANTS: CardTemplate[] = [
     body: "HAHAHAHAHAHAHA just kidding! I want this app to actually work.",
   },
   {
+    key: "grok-codebase",
+    eyebrow: "workstream",
+    title: "Using Grok right now to spice up the codebase a little",
+    body: "Wouldn't look authentic if we only had good code.",
+  },
+  {
+    key: "rewrite-rust",
+    eyebrow: "workstream",
+    title: "Rewriting the entire codebase in Rust",
+    body: "This should save us a few bytes of RAM.",
+    lastNPositions: 2,
+  },
+  {
+    key: "refactor-real-quick",
+    eyebrow: "workstream",
+    title: "Let me actually refactor everything real quick",
+    body: "Hope you have a working copy as fallback.",
+    lastNPositions: 2,
+  },
+  {
+    key: "compiler-cpp",
+    eyebrow: "workstream",
+    title: "Writing my own compiler in C++",
+    body: "These RAM sticks ain't ready for us.",
+  },
+  {
     key: "meditating",
     eyebrow: "workstream",
     title: "Meditating",
@@ -187,7 +220,7 @@ export const MIDDLE_CARD_VARIANTS: CardTemplate[] = [
     key: "agents-md",
     eyebrow: "workstream",
     title: "Updating AGENTS.md",
-    body: "This will help me preventing mistakes in the future.",
+    body: "This will help me avoid mistakes in the future.",
     interaction: {
       type: "fake-diff",
     },
@@ -229,25 +262,25 @@ export const FINAL_CARD_VARIANTS: FinalCardTemplate[] = [
   {
     key: "bad-product",
     eyebrow: "final result",
-    title: "I made the decision not to build this product.",
+    title: "I decided not to build this product",
     body: "To be frank, it's just not a good product. If you need guidance on how to proceed with a bad product, the usual next step is to get yourself some VC funding.",
   },
   {
     key: "rm-rf",
     eyebrow: "final result",
-    title: "Bad news, Chief.",
+    title: "Bad news, Chief...",
     body: "I accidentally ran rm -rf on the entire codebase. Could you retry the whole thing? sowwy >.<",
   },
   {
     key: "own-stack",
     eyebrow: "final result",
     title: "I finished building the app!",
-    body: "Unfortunately, the idea was actually good. So I pushed it to my own stack. Made like 15 bucks already. I'll leave you some credit if you'd like. :)",
+    body: "Unfortunately, the idea was actually pretty good, so I pushed it to my own stack. Made like 15 bucks already. I'll leave you some credit if you'd like. :)",
   },
   {
     key: "anthropic-key",
     eyebrow: "final result",
-    title: "I tried building your app.",
+    title: "I tried building your app...",
     body: "However, my Anthropic account just got nuked. Please provide me with your own Anthropic key:",
     interaction: {
       type: "anthropic-key",
@@ -259,10 +292,10 @@ export const FINAL_CARD_VARIANTS: FinalCardTemplate[] = [
   {
     key: "dodge-code-link",
     eyebrow: "final result",
-    title: "It's done! Click here to access the code",
+    title: "It's done! Have a look:",
     interaction: {
       type: "dodge-code-link",
-      buttonLabel: "Access code",
+      buttonLabel: "Access codebase",
       successMessage:
         "wow you actually did all that to find out what happens. go back to twitter, nerd!",
     },
@@ -270,8 +303,8 @@ export const FINAL_CARD_VARIANTS: FinalCardTemplate[] = [
   {
     key: "dog-accident",
     eyebrow: "final result",
-    title: "Aww man, you totally looked away.",
-    body: "He pissed on my 5 MacBook minis. I'm going to have to cancel this. :(",
+    title: "Aww man, you totally looked away...",
+    body: "The dog pissed on my 5 MacBook minis. I'm going to have to cancel this project. :(",
     specialOnly: true,
   },
 ];
@@ -479,6 +512,10 @@ function selectMiddleCards(seed: number, seenHistory: SeenVariantHistory) {
 
       if (template.mustBeLast) {
         return cards.length === cardCount - 1;
+      }
+
+      if (template.lastNPositions) {
+        return cards.length >= cardCount - template.lastNPositions;
       }
 
       return true;

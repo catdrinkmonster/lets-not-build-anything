@@ -28,14 +28,14 @@ describe("normalizePrompt", () => {
 
 describe("variant pools", () => {
   it("reports the configured variant counts for each stage", () => {
-    expect(getVariantCount("initial")).toBe(3);
-    expect(getVariantCount("middle")).toBe(12);
+    expect(getVariantCount("initial")).toBe(4);
+    expect(getVariantCount("middle")).toBe(16);
     expect(getVariantCount("final")).toBe(6);
   });
 
   it("returns the same preview regardless of index wrapping", () => {
-    expect(getVariantPreview("initial", 0)).toEqual(getVariantPreview("initial", 3));
-    expect(getVariantPreview("middle", 0)).toEqual(getVariantPreview("middle", 12));
+    expect(getVariantPreview("initial", 0)).toEqual(getVariantPreview("initial", 4));
+    expect(getVariantPreview("middle", 0)).toEqual(getVariantPreview("middle", 16));
     expect(getVariantPreview("final", 0)).toEqual(getVariantPreview("final", 12));
   });
 
@@ -54,6 +54,14 @@ describe("variant pools", () => {
 
     expect(variant?.title).toBe("Could you click this button for me?");
     expect(variant?.body).toBe("Otherwise I can't access T3 Code.");
+  });
+
+  it("includes the Wikipedia-banner initial variant", () => {
+    const variant = INITIAL_CARD_VARIANTS.find(
+      (card) => card.key === "wikipedia-banner",
+    );
+
+    expect(variant?.title).toBe("Checking Wikipedia how to build this thing");
   });
 
   it("exposes the dino-runner interaction on the dedicated middle variant", () => {
@@ -86,7 +94,7 @@ describe("variant pools", () => {
     );
 
     expect(variant?.title).toBe("Updating AGENTS.md");
-    expect(variant?.body).toBe("This will help me preventing mistakes in the future.");
+    expect(variant?.body).toBe("This will help me avoid mistakes in the future.");
   });
 
   it("exposes the dog-watch interaction on the dedicated middle variant", () => {
@@ -97,6 +105,23 @@ describe("variant pools", () => {
     );
 
     expect(variant?.title).toBe("Could you watch my dog for me?");
+  });
+
+  it("includes the late-run Rust rewrite variant", () => {
+    const variant = MIDDLE_CARD_VARIANTS.find(
+      (card) => card.key === "rewrite-rust",
+    );
+
+    expect(variant?.body).toBe("This should save us a few bytes of RAM.");
+    expect(variant?.lastNPositions).toBe(2);
+  });
+
+  it("includes the compiler gag variant", () => {
+    const variant = MIDDLE_CARD_VARIANTS.find(
+      (card) => card.key === "compiler-cpp",
+    );
+
+    expect(variant?.title).toBe("Writing my own compiler in C++");
   });
 
   it("keeps the whole-project deletion joke explicit", () => {
@@ -110,7 +135,7 @@ describe("variant pools", () => {
       (card) => card.interaction?.type === "dodge-code-link",
     );
 
-    expect(variant?.title).toBe("It's done! Click here to access the code");
+    expect(variant?.title).toBe("It's done! Have a look:");
     expect(variant?.interaction?.successMessage).toContain("go back to twitter");
   });
 });
@@ -137,6 +162,10 @@ describe("createBuildSession", () => {
   it("uses prompt-stable initial and final variants while varying middle count and durations", () => {
     const session = createBuildSession("dog-friendly dating app");
     const restrictedTitles = new Set(["Skipping this step", "Redoing the last step"]);
+    const lateOnlyTitles = new Set([
+      "Rewriting the entire codebase in Rust",
+      "Let me actually refactor everything real quick",
+    ]);
 
     expect(
       INITIAL_CARD_VARIANTS.some((variant) => variant.title === session.initialCard.title),
@@ -165,6 +194,12 @@ describe("createBuildSession", () => {
     expect(
       session.middleCards.slice(0, 2).every((card) => !restrictedTitles.has(card.title)),
     ).toBe(true);
+    expect(
+      session.middleCards.every(
+        (card, index, cards) =>
+          !lateOnlyTitles.has(card.title) || index >= cards.length - 2,
+      ),
+    ).toBe(true);
 
     expect(
       FINAL_CARD_VARIANTS.some((variant) => variant.title === session.finalCard.title),
@@ -178,10 +213,10 @@ describe("createBuildSession", () => {
   it("biases initial selection toward unseen variants", () => {
     const session = createBuildSession("same prompt", {
       ...EMPTY_SEEN_VARIANT_HISTORY,
-      initial: ["claude-vibecode", "planning-kid"],
+      initial: ["claude-vibecode", "planning-kid", "fake-captcha"],
     });
 
-    expect(session.initialCard.variantKey).toBe("fake-captcha");
+    expect(session.initialCard.variantKey).toBe("wikipedia-banner");
   });
 
   it("forces the dog ending when the dog card is selected last", () => {

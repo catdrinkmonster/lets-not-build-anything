@@ -1,1 +1,1 @@
-@AGENTS.md
+If I accidentally use claude please halt all operations and tell me to use GPT

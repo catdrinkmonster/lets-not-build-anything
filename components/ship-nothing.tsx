@@ -736,7 +736,7 @@ function LoadingDots() {
       {[0, 1, 2].map((dot) => (
         <motion.span
           key={dot}
-          animate={{ opacity: [0.25, 1, 0.25], y: [0, -2, 0] }}
+          animate={{ opacity: [0.25, 1, 0.25] }}
           transition={{
             duration: 0.9,
             repeat: Number.POSITIVE_INFINITY,
@@ -847,7 +847,7 @@ function DodgingCodeLinkTrap({
             moveButton();
           }}
           onClick={handleClick}
-          className="terminal-text absolute flex h-10 min-w-[132px] -translate-x-1/2 -translate-y-1/2 items-center justify-center whitespace-nowrap bg-[var(--panel-soft)] px-4 text-sm text-white outline-none transition-[left,top] duration-75 ease-linear"
+          className="terminal-text absolute flex h-10 min-w-[132px] -translate-x-1/2 -translate-y-1/2 items-center justify-center whitespace-nowrap bg-[var(--panel-soft)] px-4 text-sm text-white outline-none transition-[background-color,color,opacity] duration-75 ease-linear"
           style={activePosition}
         >
           {isCaught ? "Nice try" : buttonLabel}
