@@ -178,7 +178,7 @@ export const MIDDLE_CARD_VARIANTS: CardTemplate[] = [
     key: "watch-dog",
     eyebrow: "workstream",
     title: "Could you watch my dog for me?",
-    body: "I just need a second. He seems chill.",
+    body: "I just need a second. He's chill.",
     interaction: {
       type: "tenor-embed",
       embed: "watch-dog",
@@ -236,7 +236,7 @@ export const FINAL_CARD_VARIANTS: FinalCardTemplate[] = [
     key: "dog-accident",
     eyebrow: "final result",
     title: "Oh man, you looked away.",
-    body: "He totally pissed on my MacBook mini. I'm going to have to cancel this.",
+    body: "He totally pissed on my 5 MacBook minis. I'm going to have to cancel this.",
     specialOnly: true,
   },
 ];
