@@ -5,6 +5,7 @@ import type { CSSProperties } from "react";
 import { useEffect, useMemo, useState } from "react";
 
 import { AutoDino } from "@/components/auto-dino";
+import { DvdLayout } from "@/components/dvd-layout";
 import { TenorEmbed } from "@/components/tenor-embed";
 import {
   DEFAULT_IDEA,
@@ -288,6 +289,7 @@ export function ShipNothing() {
                         ) : null}
 
                         {previewCard.interaction?.type === "dino-runner" ? <AutoDino /> : null}
+                        {previewCard.interaction?.type === "dvd-layout" ? <DvdLayout /> : null}
                         {previewCard.interaction?.type === "meditation-timer" ? (
                           <MeditationTimer
                             key={`preview-meditation-${previewCard.id}`}
@@ -456,6 +458,9 @@ export function ShipNothing() {
 
                             {activeStep.interaction?.type === "dino-runner" ? (
                               <AutoDino />
+                            ) : null}
+                            {activeStep.interaction?.type === "dvd-layout" ? (
+                              <DvdLayout />
                             ) : null}
                             {activeStep.interaction?.type === "meditation-timer" ? (
                               <MeditationTimer

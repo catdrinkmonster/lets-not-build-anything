@@ -29,13 +29,13 @@ describe("normalizePrompt", () => {
 describe("variant pools", () => {
   it("reports the configured variant counts for each stage", () => {
     expect(getVariantCount("initial")).toBe(4);
-    expect(getVariantCount("middle")).toBe(16);
+    expect(getVariantCount("middle")).toBe(17);
     expect(getVariantCount("final")).toBe(6);
   });
 
   it("returns the same preview regardless of index wrapping", () => {
     expect(getVariantPreview("initial", 0)).toEqual(getVariantPreview("initial", 4));
-    expect(getVariantPreview("middle", 0)).toEqual(getVariantPreview("middle", 16));
+    expect(getVariantPreview("middle", 0)).toEqual(getVariantPreview("middle", 17));
     expect(getVariantPreview("final", 0)).toEqual(getVariantPreview("final", 12));
   });
 
@@ -86,6 +86,14 @@ describe("variant pools", () => {
     );
 
     expect(variant?.title).toBe("Meditating");
+  });
+
+  it("exposes the DVD layout interaction on the dedicated middle variant", () => {
+    const variant = MIDDLE_CARD_VARIANTS.find(
+      (card) => card.interaction?.type === "dvd-layout",
+    );
+
+    expect(variant?.title).toBe("Stress-testing the layout with a bouncing DVD logo");
   });
 
   it("exposes the fake-diff interaction on the dedicated middle variant", () => {

@@ -20,6 +20,9 @@ export type BuildCardInteraction =
     }
   | {
       type: "meditation-timer";
+    }
+  | {
+      type: "dvd-layout";
     };
 
 export type FinalCardInteraction =
@@ -197,7 +200,7 @@ export const MIDDLE_CARD_VARIANTS: CardTemplate[] = [
   {
     key: "refactor-real-quick",
     eyebrow: "workstream",
-    title: "Let me actually refactor everything real quick",
+    title: "Let me refactor everything real quick",
     body: "Hope you have a working copy as fallback.",
     lastNPositions: 2,
   },
@@ -206,6 +209,15 @@ export const MIDDLE_CARD_VARIANTS: CardTemplate[] = [
     eyebrow: "workstream",
     title: "Writing my own compiler in C++",
     body: "These RAM sticks ain't ready for us.",
+  },
+  {
+    key: "dvd-layout",
+    eyebrow: "workstream",
+    title: "Stress-testing the layout with a bouncing DVD logo",
+    body: "If it hits the corner, we ship.",
+    interaction: {
+      type: "dvd-layout",
+    },
   },
   {
     key: "meditating",

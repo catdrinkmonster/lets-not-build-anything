@@ -11,6 +11,9 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   title: "Let's Not Build Anything",
   description: "A fake build interface for ideas that are not getting shipped.",
+  icons: {
+    icon: "/favicon-96x96.avif",
+  },
 };
 
 export default function RootLayout({
