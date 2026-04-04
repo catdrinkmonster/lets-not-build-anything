@@ -1,0 +1,95 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0a0a0b;
+  --foreground: #f2f2f3;
+  --muted: #8a8a8f;
+  --line: #232428;
+  --line-strong: #303238;
+  --panel: #111215;
+  --panel-strong: #15141b;
+  --panel-soft: #17171d;
+  --field: #0f1012;
+  --accent: #74f0c1;
+  --accent-soft: rgba(116, 240, 193, 0.14);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-ibm-plex-mono);
+  --font-mono: var(--font-ibm-plex-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--background);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-ibm-plex-mono), monospace;
+  min-height: 100vh;
+}
+
+body::before {
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-position: center;
+  background-size: 96px 96px;
+  content: "";
+  inset: 0;
+  opacity: 0.1;
+  mask-image: linear-gradient(180deg, black, transparent 92%);
+  pointer-events: none;
+  position: fixed;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+textarea {
+  font: inherit;
+}
+
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+::selection {
+  background: rgba(116, 240, 193, 0.35);
+  color: var(--foreground);
+}
+
+.panel {
+  background: var(--panel);
+  border: 0;
+  box-shadow: none;
+}
+
+.panel-strong {
+  background: var(--panel-strong);
+  border: 0;
+  box-shadow: none;
+}
+
+.terminal-text {
+  font-family: var(--font-ibm-plex-mono), monospace;
+  letter-spacing: -0.02em;
+}
+
+.terminal-accent-left {
+  border-left: 5px solid var(--accent);
+}
