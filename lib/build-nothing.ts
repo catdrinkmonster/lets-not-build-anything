@@ -1,7 +1,34 @@
 export type CardStage = "initial" | "middle" | "final";
 
+export type BuildCardInteraction =
+  | {
+      type: "dino-runner";
+    }
+  | {
+      type: "ugly-gradients";
+    }
+  | {
+      type: "fake-diff";
+    }
+  | {
+      type: "tenor-embed";
+      embed: "planning" | "watch-dog";
+      maxWidth?: number;
+    }
+  | {
+      type: "fake-captcha";
+    };
+
+export type FinalCardInteraction = {
+  type: "anthropic-key";
+  placeholder: string;
+  invalidMessage: string;
+  successMessage: string;
+};
+
 export type BuildCard = {
   id: string;
+  variantKey: string;
   eyebrow: string;
   title: string;
   body?: string;
@@ -11,29 +38,11 @@ export type BuildCard = {
 
 export type FinalCard = {
   id: string;
+  variantKey: string;
   eyebrow: string;
   title: string;
   body?: string;
   interaction?: FinalCardInteraction;
-};
-
-export type BuildCardInteraction = {
-  type: "dino-runner";
-} | {
-  type: "ugly-gradients";
-} | {
-  type: "fake-diff";
-} | {
-  type: "tenor-embed";
-} | {
-  type: "fake-captcha";
-};
-
-export type FinalCardInteraction = {
-  type: "anthropic-key";
-  placeholder: string;
-  invalidMessage: string;
-  successMessage: string;
 };
 
 export type BuildSession = {
@@ -43,7 +52,14 @@ export type BuildSession = {
   finalCard: FinalCard;
 };
 
+export type SeenVariantHistory = {
+  initial: string[];
+  middle: string[];
+  final: string[];
+};
+
 type BaseCardTemplate = {
+  key: string;
   eyebrow: string;
   title: string;
   body?: string;
@@ -52,10 +68,13 @@ type BaseCardTemplate = {
 
 type CardTemplate = BaseCardTemplate & {
   interaction?: BuildCardInteraction;
+  mustBeLast?: boolean;
+  forcedFinalKey?: string;
 };
 
 type FinalCardTemplate = BaseCardTemplate & {
   interaction?: FinalCardInteraction;
+  specialOnly?: boolean;
 };
 
 const MIN_MIDDLE_CARD_COUNT = 3;
@@ -66,21 +85,32 @@ const MAX_CARD_DURATION_MS = 10000;
 export const DEFAULT_IDEA =
   "an ai startup for people too busy to have a personality";
 
+export const EMPTY_SEEN_VARIANT_HISTORY: SeenVariantHistory = {
+  initial: [],
+  middle: [],
+  final: [],
+};
+
 export const INITIAL_CARD_VARIANTS: CardTemplate[] = [
   {
+    key: "claude-vibecode",
     eyebrow: "initial review",
     title: "Asking Claude how to vibecode an app",
     body: "Nevermind. I accidentally said 'hello', so I hit my limits. Asking ChatGPT instead.",
   },
   {
+    key: "planning-kid",
     eyebrow: "initial review",
     title: "Planning the project in unnecessary detail",
     body: "This might take 6 or 7 minutes.",
     interaction: {
       type: "tenor-embed",
+      embed: "planning",
+      maxWidth: 220,
     },
   },
   {
+    key: "fake-captcha",
     eyebrow: "initial review",
     title: "Could you click this button for me?",
     body: "Otherwise I can't access T3 Code.",
@@ -92,43 +122,51 @@ export const INITIAL_CARD_VARIANTS: CardTemplate[] = [
 
 export const MIDDLE_CARD_VARIANTS: CardTemplate[] = [
   {
+    key: "smoke-break",
     eyebrow: "workstream",
     title: "Taking a smoke break.",
     body: "I'm European, so this is normal. VAT tax will be added to this action.",
   },
   {
+    key: "skip-step",
     eyebrow: "workstream",
     title: "Skipping this step",
     body: "This will likely hurt the final product, but I am willing to take that risk at your expense.",
     minPosition: 2,
   },
   {
+    key: "redo-last-step",
     eyebrow: "workstream",
     title: "Redoing the last step",
     body: "I lowkey forgor.",
     minPosition: 2,
   },
   {
+    key: "mrbeast",
     eyebrow: "workstream",
     title: "Watching a MrBeast video",
     body: "Just trying to manifest some money.",
   },
   {
+    key: "token-bomb",
     eyebrow: "workstream",
-    title: "Can you check for me if this is a token bomb: 🔥",
+    title: "Can you check for me if this is a token bomb: \u{1F525}",
     body: "3,000,000 tokens seems like a lot for an emoji.",
   },
   {
+    key: "source-maps",
     eyebrow: "workstream",
     title: "Pushing source maps to production",
     body: "Can't hurt.",
   },
   {
+    key: "local-model",
     eyebrow: "workstream",
     title: "Running a local model",
     body: "HAHAHAHAHAHAHA just kidding! I want this app to actually work.",
   },
   {
+    key: "agents-md",
     eyebrow: "workstream",
     title: "Updating AGENTS.md",
     body: "This will help me preventing mistakes in the future.",
@@ -137,6 +175,20 @@ export const MIDDLE_CARD_VARIANTS: CardTemplate[] = [
     },
   },
   {
+    key: "watch-dog",
+    eyebrow: "workstream",
+    title: "Could you watch my dog for me?",
+    body: "I just need a second. He seems chill.",
+    interaction: {
+      type: "tenor-embed",
+      embed: "watch-dog",
+      maxWidth: 220,
+    },
+    mustBeLast: true,
+    forcedFinalKey: "dog-accident",
+  },
+  {
+    key: "dino-runner",
     eyebrow: "workstream",
     title: "Playing the Chrome dinosaur game",
     body: "This technically counts as product research.",
@@ -145,6 +197,7 @@ export const MIDDLE_CARD_VARIANTS: CardTemplate[] = [
     },
   },
   {
+    key: "ugly-gradients",
     eyebrow: "workstream",
     title: "Applying gradients",
     body: "Lots. I need lots of it.",
@@ -156,16 +209,19 @@ export const MIDDLE_CARD_VARIANTS: CardTemplate[] = [
 
 export const FINAL_CARD_VARIANTS: FinalCardTemplate[] = [
   {
+    key: "bad-product",
     eyebrow: "final result",
     title: "I made the decision not to build this product.",
     body: "To be frank, it's just not a good product. If you need guidance on how to proceed with a bad product, the usual next step is to get yourself some VC funding.",
   },
   {
+    key: "rm-rf",
     eyebrow: "final result",
     title: "Bad news, Chief.",
     body: "I accidentally ran rm -rf on the entire codebase. Could you retry the whole thing? sowwy >.<",
   },
   {
+    key: "anthropic-key",
     eyebrow: "final result",
     title: "I tried building your app.",
     body: "However, my Anthropic account just got nuked. Please provide me with your own Anthropic key:",
@@ -175,6 +231,13 @@ export const FINAL_CARD_VARIANTS: FinalCardTemplate[] = [
       invalidMessage: "Incorrect format.",
       successMessage: "not actually! you freak! im banning you!",
     },
+  },
+  {
+    key: "dog-accident",
+    eyebrow: "final result",
+    title: "Oh man, you looked away.",
+    body: "He totally pissed on my MacBook mini. I'm going to have to cancel this.",
+    specialOnly: true,
   },
 ];
 
@@ -193,6 +256,7 @@ export function getVariantPreview(stage: CardStage, index: number) {
 
     return {
       id: `${stage}-${normalizeIndex(index, getPool(stage).length)}`,
+      variantKey: template.key,
       eyebrow: template.eyebrow,
       title: template.title,
       body: template.body,
@@ -204,6 +268,7 @@ export function getVariantPreview(stage: CardStage, index: number) {
 
   return {
     id: `${stage}-${normalizeIndex(index, getPool(stage).length)}`,
+    variantKey: template.key,
     eyebrow: template.eyebrow,
     title: template.title,
     body: template.body,
@@ -212,15 +277,34 @@ export function getVariantPreview(stage: CardStage, index: number) {
   } satisfies BuildCard;
 }
 
-export function createBuildSession(input: string): BuildSession {
+export function createBuildSession(
+  input: string,
+  seenHistory: SeenVariantHistory = EMPTY_SEEN_VARIANT_HISTORY,
+): BuildSession {
   const prompt = normalizePrompt(input);
   const seed = hashString(prompt.toLowerCase());
+  const initialIndex = selectInitialCardIndex(seed, seenHistory);
+  const middleSelection = selectMiddleCards(seed, seenHistory);
 
   return {
     id: seed.toString(36),
-    initialCard: createTimedCard("initial", selectInitialCardIndex(seed), durationFor(seed, 0)),
-    middleCards: selectMiddleCards(seed),
-    finalCard: createFinalCard(seed),
+    initialCard: createTimedCard("initial", initialIndex, durationFor(seed, 0)),
+    middleCards: middleSelection.cards,
+    finalCard: createFinalCard(seed, seenHistory, middleSelection.forcedFinalKey),
+  };
+}
+
+export function markSeenVariants(
+  current: SeenVariantHistory,
+  session: BuildSession,
+): SeenVariantHistory {
+  return {
+    initial: addUnique(current.initial, session.initialCard.variantKey),
+    middle: session.middleCards.reduce(
+      (seen, card) => addUnique(seen, card.variantKey),
+      current.middle,
+    ),
+    final: addUnique(current.final, session.finalCard.variantKey),
   };
 }
 
@@ -293,6 +377,7 @@ function createTimedCard(
 
   return {
     id: `${stage}-${normalizedIndex}-${durationMs}`,
+    variantKey: template.key,
     eyebrow: template.eyebrow,
     title: template.title,
     body: template.body,
@@ -301,12 +386,26 @@ function createTimedCard(
   };
 }
 
-function createFinalCard(index: number): FinalCard {
-  const template = getTemplate("final", index);
-  const normalizedIndex = normalizeIndex(index, FINAL_CARD_VARIANTS.length);
+function createFinalCard(
+  seed: number,
+  seenHistory: SeenVariantHistory,
+  forcedFinalKey?: string,
+): FinalCard {
+  const availablePool = forcedFinalKey
+    ? FINAL_CARD_VARIANTS.filter((variant) => variant.key === forcedFinalKey)
+    : FINAL_CARD_VARIANTS.filter((variant) => !variant.specialOnly);
+  const template = pickBiasedVariant(
+    availablePool,
+    seenHistory.final,
+    createRandom(seed ^ 0x45d9f3b),
+  );
+  const normalizedIndex = FINAL_CARD_VARIANTS.findIndex(
+    (variant) => variant.key === template.key,
+  );
 
   return {
     id: `final-${normalizedIndex}`,
+    variantKey: template.key,
     eyebrow: template.eyebrow,
     title: template.title,
     body: template.body,
@@ -314,37 +413,52 @@ function createFinalCard(index: number): FinalCard {
   };
 }
 
-function selectInitialCardIndex(seed: number) {
-  return seed % INITIAL_CARD_VARIANTS.length;
+function selectInitialCardIndex(seed: number, seenHistory: SeenVariantHistory) {
+  const selected = pickBiasedVariant(
+    INITIAL_CARD_VARIANTS,
+    seenHistory.initial,
+    createRandom(seed ^ 0x27d4eb2d),
+  );
+
+  return INITIAL_CARD_VARIANTS.findIndex((variant) => variant.key === selected.key);
 }
 
-function selectMiddleCards(seed: number): BuildCard[] {
+function selectMiddleCards(seed: number, seenHistory: SeenVariantHistory) {
   const cards: BuildCard[] = [];
   const cardCount =
     MIN_MIDDLE_CARD_COUNT +
     ((seed >> 9) % (MAX_MIDDLE_CARD_COUNT - MIN_MIDDLE_CARD_COUNT + 1));
-  const usedIndexes = new Set<number>();
   const random = createRandom(seed ^ 0x9e3779b9);
+  const usedKeys = new Set<string>();
+  let forcedFinalKey: string | undefined;
 
   while (cards.length < cardCount) {
-    const eligibleIndexes = MIDDLE_CARD_VARIANTS.flatMap((template, index) => {
-      if (usedIndexes.has(index)) {
-        return [];
+    const candidates = MIDDLE_CARD_VARIANTS.filter((template) => {
+      if (usedKeys.has(template.key)) {
+        return false;
       }
 
       if ((template.minPosition ?? 0) > cards.length) {
-        return [];
+        return false;
       }
 
-      return [index];
-    });
-    const fallbackIndexes = MIDDLE_CARD_VARIANTS.flatMap((_, index) =>
-      usedIndexes.has(index) ? [] : [index],
-    );
-    const pool = eligibleIndexes.length > 0 ? eligibleIndexes : fallbackIndexes;
-    const selectedIndex = pool[Math.floor(random() * pool.length)];
+      if (template.mustBeLast) {
+        return cards.length === cardCount - 1;
+      }
 
-    usedIndexes.add(selectedIndex);
+      return true;
+    });
+    const selected = pickBiasedVariant(candidates, seenHistory.middle, random);
+    const selectedIndex = MIDDLE_CARD_VARIANTS.findIndex(
+      (variant) => variant.key === selected.key,
+    );
+
+    usedKeys.add(selected.key);
+
+    if (selected.forcedFinalKey) {
+      forcedFinalKey = selected.forcedFinalKey;
+    }
+
     cards.push(
       createTimedCard(
         "middle",
@@ -354,5 +468,23 @@ function selectMiddleCards(seed: number): BuildCard[] {
     );
   }
 
-  return cards;
+  return {
+    cards,
+    forcedFinalKey,
+  };
+}
+
+function pickBiasedVariant<T extends { key: string }>(
+  pool: T[],
+  seenKeys: string[],
+  random: () => number,
+) {
+  const unseenPool = pool.filter((variant) => !seenKeys.includes(variant.key));
+  const selectionPool = unseenPool.length > 0 ? unseenPool : pool;
+
+  return selectionPool[Math.floor(random() * selectionPool.length)];
+}
+
+function addUnique(items: string[], value: string) {
+  return items.includes(value) ? items : [...items, value];
 }

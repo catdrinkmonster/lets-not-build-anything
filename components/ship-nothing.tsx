@@ -8,18 +8,22 @@ import { AutoDino } from "@/components/auto-dino";
 import { TenorEmbed } from "@/components/tenor-embed";
 import {
   DEFAULT_IDEA,
+  EMPTY_SEEN_VARIANT_HISTORY,
   createBuildSession,
   getVariantCount,
   getVariantPreview,
   isLikelyAnthropicApiKey,
+  markSeenVariants,
   type BuildCard,
   type BuildCardInteraction,
   type FinalCardInteraction,
   type BuildSession,
   type CardStage,
+  type SeenVariantHistory,
 } from "@/lib/build-nothing";
 
 const DEV_STAGES: CardStage[] = ["initial", "middle", "final"];
+const SEEN_VARIANTS_STORAGE_KEY = "lets-not-build-anything-seen-variants";
 
 export function ShipNothing() {
   const [draft, setDraft] = useState("");
@@ -29,6 +33,9 @@ export function ShipNothing() {
   const [isComplete, setIsComplete] = useState(false);
   const [previewStage, setPreviewStage] = useState<CardStage>("initial");
   const [resolvedActionStepIds, setResolvedActionStepIds] = useState<string[]>([]);
+  const [seenHistory, setSeenHistory] = useState<SeenVariantHistory>(
+    loadSeenVariantHistory,
+  );
 
   const devMode = process.env.NODE_ENV === "development";
   const activePrompt = useMemo(() => draft.trim() || DEFAULT_IDEA, [draft]);
@@ -52,6 +59,13 @@ export function ShipNothing() {
   );
   const activeHeader = getActiveHeader(activeStepIndex, sequence.length);
   const finalInteraction = isComplete ? session?.finalCard.interaction : undefined;
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      SEEN_VARIANTS_STORAGE_KEY,
+      JSON.stringify(seenHistory),
+    );
+  }, [seenHistory]);
 
   useEffect(() => {
     if (!session || !activeStep || isComplete) {
@@ -103,11 +117,14 @@ export function ShipNothing() {
       return;
     }
 
+    const nextSession = createBuildSession(activePrompt, seenHistory);
+
     setActiveStepIndex(0);
     setHistoryCount(0);
     setIsComplete(false);
     setResolvedActionStepIds([]);
-    setSession(createBuildSession(activePrompt));
+    setSeenHistory((current) => markSeenVariants(current, nextSession));
+    setSession(nextSession);
   }
 
   function handleReset() {
@@ -267,7 +284,10 @@ export function ShipNothing() {
                           <FakeAgentsDiff />
                         ) : null}
                         {previewCard.interaction?.type === "tenor-embed" ? (
-                          <TenorEmbed />
+                          <TenorEmbed
+                            embed={previewCard.interaction.embed}
+                            maxWidth={previewCard.interaction.maxWidth}
+                          />
                         ) : null}
                         {previewCard.interaction?.type === "fake-captcha" ? (
                           <FakeCaptcha key={`preview-captcha-${previewCard.id}`} />
@@ -414,7 +434,10 @@ export function ShipNothing() {
                               <FakeAgentsDiff />
                             ) : null}
                             {activeStep.interaction?.type === "tenor-embed" ? (
-                              <TenorEmbed />
+                              <TenorEmbed
+                                embed={activeStep.interaction.embed}
+                                maxWidth={activeStep.interaction.maxWidth}
+                              />
                             ) : null}
                             {activeStep.interaction?.type === "fake-captcha" ? (
                               <FakeCaptcha
@@ -446,6 +469,31 @@ export function ShipNothing() {
 
 function getCardShellClassName() {
   return "panel-strong terminal-accent-left px-5 py-5";
+}
+
+function loadSeenVariantHistory(): SeenVariantHistory {
+  if (typeof window === "undefined") {
+    return EMPTY_SEEN_VARIANT_HISTORY;
+  }
+
+  const storedHistory = window.localStorage.getItem(SEEN_VARIANTS_STORAGE_KEY);
+
+  if (!storedHistory) {
+    return EMPTY_SEEN_VARIANT_HISTORY;
+  }
+
+  try {
+    const parsed = JSON.parse(storedHistory) as Partial<SeenVariantHistory>;
+
+    return {
+      initial: Array.isArray(parsed.initial) ? parsed.initial : [],
+      middle: Array.isArray(parsed.middle) ? parsed.middle : [],
+      final: Array.isArray(parsed.final) ? parsed.final : [],
+    };
+  } catch {
+    window.localStorage.removeItem(SEEN_VARIANTS_STORAGE_KEY);
+    return EMPTY_SEEN_VARIANT_HISTORY;
+  }
 }
 
 function getCardShellStyle(
