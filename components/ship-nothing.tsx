@@ -189,7 +189,7 @@ export function ShipNothing() {
           Donate
         </a>
         <a
-          href="https://github.com/catdrinkmonster/lets-not-build-anything"
+          href="https://github.com/catdrinkmonster/build-nothing"
           target="_blank"
           rel="noreferrer"
           className="terminal-text text-[11px] uppercase tracking-[0.16em] text-white/34 transition hover:text-white/72"

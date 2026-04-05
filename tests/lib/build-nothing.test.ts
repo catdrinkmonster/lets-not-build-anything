@@ -13,7 +13,7 @@ import {
   getVariantPreview,
   isLikelyAnthropicApiKey,
   normalizePrompt,
-} from "./build-nothing";
+} from "../../lib/build-nothing";
 
 describe("normalizePrompt", () => {
   it("collapses whitespace and trims the input", () => {

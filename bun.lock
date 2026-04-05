@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "lets-not-build-anything",
+      "name": "build-nothing",
       "dependencies": {
         "@chenglou/pretext": "^0.0.4",
         "motion": "^12.38.0",

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { getActiveHeader, getPreviewHeader } from "./headers";
+import {
+  getActiveHeader,
+  getPreviewHeader,
+} from "../../../components/ship-nothing/headers";
 
 describe("getActiveHeader", () => {
   it("uses setting up for the initial card", () => {

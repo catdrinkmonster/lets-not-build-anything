@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { moveBouncingRect } from "./dvd-motion";
+import { moveBouncingRect } from "../../lib/dvd-motion";
 
 describe("moveBouncingRect", () => {
   it("moves at a constant velocity away from edges", () => {

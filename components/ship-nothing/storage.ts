@@ -3,7 +3,7 @@ import {
   type VariantRotationState,
 } from "@/lib/build-nothing";
 
-export const ROTATION_STATE_STORAGE_KEY = "lets-not-build-anything-rotation-state-v2";
+export const ROTATION_STATE_STORAGE_KEY = "build-nothing-rotation-state-v1";
 
 export function loadRotationState(): VariantRotationState {
   if (typeof window === "undefined") {

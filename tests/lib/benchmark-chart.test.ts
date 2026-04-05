@@ -5,7 +5,7 @@ import {
   BENCHMARK_ROW_FILL_DURATION_S,
   BENCHMARK_ROW_STAGGER_S,
   getBenchmarkRowDelay,
-} from "./benchmark-chart";
+} from "../../lib/benchmark-chart";
 
 describe("BENCHMARK_CHART_ROWS", () => {
   it("keeps the benchmark absurdly skewed in favor of your app", () => {

@@ -4,7 +4,7 @@ import {
   OBSIDIAN_GRAPH_EDGES,
   OBSIDIAN_GRAPH_NODES,
   OBSIDIAN_GRAPH_OFFSET,
-} from "./obsidian-graph";
+} from "../../lib/obsidian-graph";
 
 describe("OBSIDIAN_GRAPH_*", () => {
   it("keeps the fake Obsidian vault graph unreadably dense", () => {

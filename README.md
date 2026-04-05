@@ -1,4 +1,4 @@
-# let's not build anything
+# build nothing
 
 A website for people with ideas...that will stay ideas. 
 
