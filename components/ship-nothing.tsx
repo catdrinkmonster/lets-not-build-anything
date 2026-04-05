@@ -33,6 +33,7 @@ import {
 
 const DEV_STAGES: CardStage[] = ["initial", "middle", "final"];
 const ROTATION_STATE_STORAGE_KEY = "lets-not-build-anything-rotation-state-v2";
+const DONATION_LINK = "https://buy.stripe.com/28E14g2j6eQ9ds8gAa8N200";
 
 export function ShipNothing() {
   const [draft, setDraft] = useState("");
@@ -181,14 +182,24 @@ export function ShipNothing() {
 
   return (
     <main className="relative flex min-h-screen flex-1 items-center justify-center overflow-hidden px-4 py-10 sm:px-6">
-      <a
-        href="https://github.com/catdrinkmonster/lets-not-build-anything"
-        target="_blank"
-        rel="noreferrer"
-        className="terminal-text absolute right-4 top-4 z-20 text-[11px] uppercase tracking-[0.16em] text-white/34 transition hover:text-white/72 sm:right-6 sm:top-6"
-      >
-        GitHub
-      </a>
+      <div className="absolute right-4 top-4 z-20 flex items-center gap-4 sm:right-6 sm:top-6">
+        <a
+          href={DONATION_LINK}
+          target="_blank"
+          rel="noreferrer"
+          className="terminal-text text-[11px] uppercase tracking-[0.16em] text-white/34 transition hover:text-white/72"
+        >
+          Donate
+        </a>
+        <a
+          href="https://github.com/catdrinkmonster/lets-not-build-anything"
+          target="_blank"
+          rel="noreferrer"
+          className="terminal-text text-[11px] uppercase tracking-[0.16em] text-white/34 transition hover:text-white/72"
+        >
+          GitHub
+        </a>
+      </div>
       <motion.section
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -550,6 +561,19 @@ export function ShipNothing() {
                       </AnimatePresence>
                     </div>
                   </div>
+
+                  {isComplete ? (
+                    <div className="flex justify-center px-1 pt-5">
+                      <a
+                        href={DONATION_LINK}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="terminal-text text-xs tracking-[0.06em] text-white/42 transition hover:text-white/72"
+                      >
+                        had a laugh? consider a small donation :)
+                      </a>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </motion.div>

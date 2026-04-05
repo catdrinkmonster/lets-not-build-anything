@@ -106,7 +106,7 @@ type FinalCardTemplate = BaseCardTemplate & {
 
 const MIN_MIDDLE_CARD_COUNT = 3;
 const MAX_MIDDLE_CARD_COUNT = 5;
-export const DEFAULT_CARD_DURATION_MS = 10000;
+export const DEFAULT_CARD_DURATION_MS = 8000;
 
 export const DEFAULT_IDEA =
   "an ai startup for people too busy to have a personality";
