@@ -39,8 +39,8 @@ export const INITIAL_CARD_VARIANTS: CardTemplate[] = [
   {
     key: "wikipedia-banner",
     eyebrow: "initial review",
-    title: "Crawling Wikipedia on how to build this thing",
-    body: "Do you have 3 dollars by chance? I can't read anything with that massive banner in my face.",
+    title: "Reading Wikipedia on how to build this shit",
+    body: "Do you have $3 by chance? I can't see anything with that big ass banner in my face.",
   },
   {
     key: "obsidian-vault",
