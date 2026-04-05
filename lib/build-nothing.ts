@@ -1,388 +1,45 @@
-export type CardStage = "initial" | "middle" | "final";
+import {
+  DEFAULT_CARD_DURATION_MS,
+  DEFAULT_IDEA,
+  FINAL_CARD_VARIANTS,
+  INITIAL_CARD_VARIANTS,
+  INITIAL_ROTATION_STATE,
+  MIDDLE_CARD_VARIANTS,
+} from "./build-nothing-variants";
+import type {
+  BuildCard,
+  BuildSession,
+  CardStage,
+  CardTemplate,
+  FinalCard,
+  FinalCardTemplate,
+  VariantRotationState,
+} from "./build-nothing-types";
 
-export type BuildCardInteraction =
-  | {
-      type: "dino-runner";
-    }
-  | {
-      type: "ugly-gradients";
-    }
-  | {
-      type: "fake-diff";
-    }
-  | {
-      type: "tenor-embed";
-      embed: "planning" | "watch-dog";
-      maxWidth?: number;
-    }
-  | {
-      type: "fake-captcha";
-    }
-  | {
-      type: "meditation-timer";
-    }
-  | {
-      type: "dvd-layout";
-    }
-  | {
-      type: "benchmark-chart";
-    }
-  | {
-      type: "obsidian-graph";
-    }
-  | {
-      type: "favicon-bloat";
-    };
+export type {
+  BaseCardTemplate,
+  BuildCard,
+  BuildCardInteraction,
+  BuildSession,
+  CardStage,
+  CardTemplate,
+  FinalCard,
+  FinalCardInteraction,
+  FinalCardTemplate,
+  VariantRotationState,
+} from "./build-nothing-types";
 
-export type FinalCardInteraction =
-  | {
-      type: "anthropic-key";
-      placeholder: string;
-      invalidMessage: string;
-      successMessage: string;
-    }
-  | {
-      type: "dodge-code-link";
-      buttonLabel: string;
-      successMessage: string;
-    }
-  | {
-      type: "zip-bomb";
-      fileName: string;
-      fileSize: string;
-    };
-
-export type BuildCard = {
-  id: string;
-  variantKey: string;
-  eyebrow: string;
-  title: string;
-  body?: string;
-  interaction?: BuildCardInteraction;
-  durationMs: number;
-};
-
-export type FinalCard = {
-  id: string;
-  variantKey: string;
-  eyebrow: string;
-  title: string;
-  body?: string;
-  interaction?: FinalCardInteraction;
-};
-
-export type BuildSession = {
-  id: string;
-  initialCard: BuildCard;
-  middleCards: BuildCard[];
-  finalCard: FinalCard;
-};
-
-export type VariantRotationState = {
-  initial: string[];
-  middle: string[];
-  final: string[];
-};
-
-type BaseCardTemplate = {
-  key: string;
-  eyebrow: string;
-  title: string;
-  body?: string;
-  minPosition?: number;
-};
-
-type CardTemplate = BaseCardTemplate & {
-  interaction?: BuildCardInteraction;
-  mustBeLast?: boolean;
-  lastNPositions?: number;
-  forcedFinalKey?: string;
-};
-
-type FinalCardTemplate = BaseCardTemplate & {
-  interaction?: FinalCardInteraction;
-  specialOnly?: boolean;
-};
+export {
+  DEFAULT_CARD_DURATION_MS,
+  DEFAULT_IDEA,
+  FINAL_CARD_VARIANTS,
+  INITIAL_CARD_VARIANTS,
+  INITIAL_ROTATION_STATE,
+  MIDDLE_CARD_VARIANTS,
+} from "./build-nothing-variants";
 
 const MIN_MIDDLE_CARD_COUNT = 3;
 const MAX_MIDDLE_CARD_COUNT = 5;
-export const DEFAULT_CARD_DURATION_MS = 8000;
-
-export const DEFAULT_IDEA =
-  "an ai startup for people too busy to have a personality";
-
-export const INITIAL_CARD_VARIANTS: CardTemplate[] = [
-  {
-    key: "claude-vibecode",
-    eyebrow: "initial review",
-    title: "Asking Claude how to vibecode an app",
-    body: "Never mind. I accidentally said 'hello'. I gotta wait for my rate limits to reset. Asking ChatGPT instead.",
-  },
-  {
-    key: "planning-kid",
-    eyebrow: "initial review",
-    title: "Planning the project in absurd detail",
-    body: "This might take  6   or  7   minutes.",
-    interaction: {
-      type: "tenor-embed",
-      embed: "planning",
-      maxWidth: 220,
-    },
-  },
-  {
-    key: "fake-captcha",
-    eyebrow: "initial review",
-    title: "Could you click this button for me?",
-    body: "Otherwise I can't access T3 Code.",
-    interaction: {
-      type: "fake-captcha",
-    },
-  },
-  {
-    key: "wikipedia-banner",
-    eyebrow: "initial review",
-    title: "Checking Wikipedia how to build this thing",
-    body: "Do you have 3 dollars by chance? I can't read anything with this massive banner in my face.",
-  },
-  {
-    key: "obsidian-vault",
-    eyebrow: "initial review",
-    title: "Mapping out the idea in Obsidian first",
-    body: "Need to create 7 million nodes for the other two Obsidian users.",
-    interaction: {
-      type: "obsidian-graph",
-    },
-  },
-  {
-    key: "benchmark-garbage",
-    eyebrow: "initial review",
-    title: "Benchmarking your idea against complete garbage",
-    body: "Encouraging results so far.",
-    interaction: {
-      type: "benchmark-chart",
-    },
-  },
-];
-
-export const MIDDLE_CARD_VARIANTS: CardTemplate[] = [
-  {
-    key: "smoke-break",
-    eyebrow: "workstream",
-    title: "Taking a smoke break",
-    body: "I'm European, so this is normal. Naturally, VAT will be added to this action.",
-  },
-  {
-    key: "skip-step",
-    eyebrow: "workstream",
-    title: "Skipping this step",
-    body: "This action will likely hurt the final product, but I am willing to take that risk at your expense.",
-    minPosition: 2,
-  },
-  {
-    key: "redo-last-step",
-    eyebrow: "workstream",
-    title: "Redoing the last step",
-    body: "I lowkey forgor.",
-    minPosition: 2,
-  },
-  {
-    key: "mrbeast",
-    eyebrow: "workstream",
-    title: "Watching a MrBeast video",
-    body: "Just trying to manifest some revenue.",
-  },
-  {
-    key: "yc-speedrun",
-    eyebrow: "workstream",
-    title: "Watching a YC video at 1.75x speed",
-    body: "Trying to absorb alpha-guru-founder-larp without taking any of the advice.",
-  },
-  {
-    key: "token-bomb",
-    eyebrow: "workstream",
-    title: "Can you check for me if this is a token bomb: \u{1F525}",
-    body: "3,000,000 tokens seems like a lot for an emoji.",
-  },
-  {
-    key: "source-maps",
-    eyebrow: "workstream",
-    title: "Pushing source maps to production",
-    body: "Can't hurt.",
-  },
-  {
-    key: "local-model",
-    eyebrow: "workstream",
-    title: "Running a local model",
-    body: "HAHAHAHAHAHAHA just kidding! I want this app to actually work.",
-  },
-  {
-    key: "grok-codebase",
-    eyebrow: "workstream",
-    title: "Using Grok right now to spice up the codebase a little",
-    body: "Wouldn't look authentic if we only had good code.",
-  },
-  {
-    key: "rewrite-rust",
-    eyebrow: "workstream",
-    title: "Rewriting the entire codebase in Rust",
-    body: "This should save us a few bytes of RAM.",
-    lastNPositions: 2,
-  },
-  {
-    key: "refactor-real-quick",
-    eyebrow: "workstream",
-    title: "Let me refactor everything real quick",
-    body: "Hope you have a working copy as fallback.",
-    lastNPositions: 2,
-  },
-  {
-    key: "compiler-cpp",
-    eyebrow: "workstream",
-    title: "Writing my own compiler in C++",
-    body: "These RAM sticks ain't ready for us.",
-  },
-  {
-    key: "favicon-bloat",
-    eyebrow: "workstream",
-    title: "Making the logo slightly bigger",
-    body: "This should carry the next sprint.",
-    interaction: {
-      type: "favicon-bloat",
-    },
-  },
-  {
-    key: "waitlist-mom",
-    eyebrow: "workstream",
-    title: "Building the waitlist",
-    body: "Sending your mom an invite to artificially inflate demand.",
-  },
-  {
-    key: "dvd-layout",
-    eyebrow: "workstream",
-    title: "Making the text move around a DVD logo",
-    body: "Frontend history is being made as we speak.",
-    interaction: {
-      type: "dvd-layout",
-    },
-  },
-  {
-    key: "meditating",
-    eyebrow: "workstream",
-    title: "Meditating",
-    body: "Trying to solve the architecture telepathically.",
-    interaction: {
-      type: "meditation-timer",
-    },
-  },
-  {
-    key: "agents-md",
-    eyebrow: "workstream",
-    title: "Updating AGENTS.md",
-    body: "This will help me avoid mistakes in the future.",
-    interaction: {
-      type: "fake-diff",
-    },
-  },
-  {
-    key: "watch-dog",
-    eyebrow: "workstream",
-    title: "Could you watch my dog for me?",
-    body: "I just need a second. He's chill.",
-    interaction: {
-      type: "tenor-embed",
-      embed: "watch-dog",
-      maxWidth: 220,
-    },
-    mustBeLast: true,
-    forcedFinalKey: "dog-accident",
-  },
-  {
-    key: "dino-runner",
-    eyebrow: "workstream",
-    title: "Playing the Chrome dinosaur game",
-    body: "This technically counts as product research.",
-    interaction: {
-      type: "dino-runner",
-    },
-  },
-  {
-    key: "ugly-gradients",
-    eyebrow: "workstream",
-    title: "Applying gradients",
-    body: "Lots. I need lots of it.",
-    interaction: {
-      type: "ugly-gradients",
-    },
-  },
-];
-
-export const FINAL_CARD_VARIANTS: FinalCardTemplate[] = [
-  {
-    key: "bad-product",
-    eyebrow: "final result",
-    title: "I decided not to build this product",
-    body: "To be frank, it's just not a good product. If you need guidance on how to proceed with a bad product, the usual next step is to get yourself some VC funding.",
-  },
-  {
-    key: "rm-rf",
-    eyebrow: "final result",
-    title: "Bad news, Chief...",
-    body: "I accidentally ran rm -rf on the entire codebase. Could you retry the whole thing? sowwy >.<",
-  },
-  {
-    key: "own-stack",
-    eyebrow: "final result",
-    title: "I finished building the app!",
-    body: "Unfortunately, the idea was actually pretty good, so I pushed it to my own stack. Made like 15 bucks already. I'll leave you some credit if you'd like. :)",
-  },
-  {
-    key: "anthropic-key",
-    eyebrow: "final result",
-    title: "I tried building your app...",
-    body: "However, my Anthropic account just got nuked. Please provide me with your own Anthropic key:",
-    interaction: {
-      type: "anthropic-key",
-      placeholder: "sk-ant-api03-...",
-      invalidMessage: "Incorrect format.",
-      successMessage: "not actually! you freak! im banning you!",
-    },
-  },
-  {
-    key: "dodge-code-link",
-    eyebrow: "final result",
-    title: "It's done! Have a look:",
-    interaction: {
-      type: "dodge-code-link",
-      buttonLabel: "Access codebase",
-      successMessage:
-        "wow you actually did all that to find out what happens. go back to twitter, nerd!",
-    },
-  },
-  {
-    key: "dog-accident",
-    eyebrow: "final result",
-    title: "Aww man, you totally looked away...",
-    body: "The dog pissed on my 5 MacBook minis. I'm going to have to cancel this project. :(",
-    specialOnly: true,
-  },
-  {
-    key: "zip-bomb",
-    eyebrow: "final result",
-    title: "The download is ready",
-    body: "Totally normal archive. Nothing to worry about.",
-    interaction: {
-      type: "zip-bomb",
-      fileName: "source-code.zip",
-      fileSize: "182 KB",
-    },
-  },
-];
-
-export const INITIAL_ROTATION_STATE: VariantRotationState = {
-  initial: INITIAL_CARD_VARIANTS.map((variant) => variant.key),
-  middle: MIDDLE_CARD_VARIANTS.map((variant) => variant.key),
-  final: FINAL_CARD_VARIANTS.map((variant) => variant.key),
-};
 
 export function normalizePrompt(input: string): string {
   const normalized = input.trim().replace(/\s+/g, " ");
@@ -429,12 +86,11 @@ export function createBuildSession(
   const workingRotationState = cloneRotationState(rotationState);
   const initialIndex = selectInitialCardIndex(seed, workingRotationState);
   const middleSelection = selectMiddleCards(seed, workingRotationState);
-  const middleCards = ensureValidMiddleCardCount(middleSelection.cards);
 
   return {
     id: seed.toString(36),
     initialCard: createTimedCard("initial", initialIndex, durationFor()),
-    middleCards,
+    middleCards: ensureValidMiddleCardCount(middleSelection.cards),
     finalCard: createFinalCard(
       seed,
       workingRotationState,
@@ -455,9 +111,7 @@ export function advanceRotationState(
     nextState,
   );
 
-  return {
-    ...consumeRotationKey("final", nextState, session.finalCard.variantKey),
-  };
+  return consumeRotationKey("final", nextState, session.finalCard.variantKey);
 }
 
 export function isLikelyAnthropicApiKey(input: string): boolean {
@@ -477,10 +131,6 @@ function getPool(stage: CardStage) {
 
 function getTemplate(stage: "initial" | "middle", index: number): CardTemplate;
 function getTemplate(stage: "final", index: number): FinalCardTemplate;
-function getTemplate(
-  stage: CardStage,
-  index: number,
-): CardTemplate | FinalCardTemplate;
 function getTemplate(stage: CardStage, index: number) {
   const pool = getPool(stage);
   return pool[normalizeIndex(index, pool.length)];
@@ -627,19 +277,10 @@ function selectMiddleCards(seed: number, rotationState: VariantRotationState) {
       forcedFinalKey = selected.forcedFinalKey;
     }
 
-    cards.push(
-      createTimedCard(
-        "middle",
-        selectedIndex,
-        durationFor(),
-      ),
-    );
+    cards.push(createTimedCard("middle", selectedIndex, durationFor()));
   }
 
-  return {
-    cards,
-    forcedFinalKey,
-  };
+  return { cards, forcedFinalKey };
 }
 
 function pickRotatingVariant<T extends { key: string }>(
@@ -721,7 +362,7 @@ function ensureValidMiddleCardCount(cards: BuildCard[]) {
     cards.length > MAX_MIDDLE_CARD_COUNT
   ) {
     throw new Error(
-      `Invariant violated: expected ${MIN_MIDDLE_CARD_COUNT}-${MAX_MIDDLE_CARD_COUNT} middle cards, received ${cards.length}.`,
+      `Expected ${MIN_MIDDLE_CARD_COUNT}-${MAX_MIDDLE_CARD_COUNT} middle cards, received ${cards.length}.`,
     );
   }
 
