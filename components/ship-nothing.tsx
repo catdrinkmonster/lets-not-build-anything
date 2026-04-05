@@ -218,7 +218,7 @@ export function ShipNothing() {
             >
               <div className="mb-5 px-2 text-center">
                 <h1 className="terminal-text text-lg font-medium text-white/94 sm:text-xl">
-                  What do you want to build today?
+                  What do you not want to build today?
                 </h1>
               </div>
 
